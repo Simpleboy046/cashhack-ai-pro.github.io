@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CashHack AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {font-family:Arial; background:#0f172a; color:white; text-align:center;}
+    .box {margin-top:50px;}
+    input {padding:10px; margin:5px; border-radius:5px; border:none;}
+    button {padding:10px 20px; background:#22c55e; border:none; border-radius:5px;}
+    #dashboard {display:none;}
+  </style>
+</head>
+<body>
+
+<h1>🚀 CashHack AI</h1>
+
+<div class="box">
+  <h2>Login / Signup</h2>
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="dashboard" class="box">
+  <h2>📊 Dashboard</h2>
+  <p id="user"></p>
+
+  <h3>💡 Save Idea</h3>
+  <input id="idea"><br>
+  <button onclick="saveIdea()">Save</button>
+
+  <div id="ideas"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "PASTE_HERE",
+  authDomain: "PASTE_HERE",
+  projectId: "PASTE_HERE"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function signup(){
+  auth.createUserWithEmailAndPassword(email.value,password.value)
+  .then(()=>alert("Signup success"))
+  .catch(e=>alert(e.message));
+}
+
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value)
+  .then(()=>alert("Login success"))
+  .catch(e=>alert(e.message));
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    dashboard.style.display="block";
+    document.getElementById("user").innerText=user.email;
+    loadIdeas();
+  }
+});
+
+function saveIdea(){
+  db.collection("ideas").add({
+    user: auth.currentUser.email,
+    text: idea.value
+  });
+  idea.value="";
+  loadIdeas();
+}
+
+function loadIdeas(){
+  ideas.innerHTML="";
+  db.collection("ideas").get().then(snap=>{
+    snap.forEach(doc=>{
+      ideas.innerHTML += "<p>"+doc.data().text+"</p>";
+    });
+  });
+}
+</script>
+
+</body>
+</html>
